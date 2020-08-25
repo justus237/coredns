@@ -28,6 +28,10 @@ func TestNormalizeZone(t *testing.T) {
 		{"https://.:8443", "https://.:8443", false},
 		{"https://..", "://:", true},
 		{"https://.:", "://:", true},
+		{"quic://.", "quic://.:784", false},
+		{"quic://.:8443", "quic://.:8443", false},
+		{"quic://..", "://:", true},
+		{"quic://.:", "://:", true},
 	} {
 		addr, err := normalizeZone(test.input)
 		actual := addr.String()
