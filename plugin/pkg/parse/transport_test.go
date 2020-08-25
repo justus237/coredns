@@ -16,6 +16,7 @@ func TestTransport(t *testing.T) {
 		{"grpc://example.org:1443 ", transport.GRPC},
 		{"tls://example.org ", transport.TLS},
 		{"https://example.org ", transport.HTTPS},
+		{"quic://example.org ", transport.QUIC},
 	} {
 		actual, _ := Transport(test.input)
 		if actual != test.expected {
