@@ -17,8 +17,13 @@ import (
 
 // 4.1.  Connection Establishment
 // NextProtoDQ - During connection establishment, DoQ support is
-// indicated by selecting the ALPN token "dq" in the crypto handshake.
-const NextProtoDQ = "dq"
+// indicated by selecting the ALPN token "doq" in the crypto handshake.
+// Current draft version: https://tools.ietf.org/html/draft-ietf-dprive-dnsoquic-00
+const NextProtoDQ = "doq-i00"
+
+// compatProtoDQ - DOQ ALPN + old ALPNs for backwards compatibility
+var compatProtoDQ = []string{NextProtoDQ, "dq", "doq"}
+
 const minDNSPacketSize = 12 + 5
 
 // Implemented according to https://tools.ietf.org/html/draft-huitema-dprive-dnsoquic-00
@@ -71,15 +76,11 @@ func (s *ServerQUIC) ServePacket(p net.PacketConn) error {
 		return errors.New("cannot run a QUIC server without TLS config")
 	}
 
-	haveNPDQ := false
-	for _, p := range s.tlsConfig.NextProtos {
-		if p == NextProtoDQ {
-			haveNPDQ = true
-			break
+	// Adding ALPN tokens for DoQ
+	for _, a := range compatProtoDQ {
+		if !stringArrayContains(s.tlsConfig.NextProtos, a) {
+			s.tlsConfig.NextProtos = append(s.tlsConfig.NextProtos, a)
 		}
-	}
-	if !haveNPDQ {
-		s.tlsConfig.NextProtos = append(s.tlsConfig.NextProtos, NextProtoDQ)
 	}
 
 	l, err := quic.Listen(p, s.tlsConfig, nil)
@@ -193,4 +194,14 @@ func (s *ServerQUIC) handleQUICStream(stream quic.Stream, session quic.Session) 
 	// Write the response
 	buf, _ := dw.Msg.Pack()
 	_, _ = stream.Write(buf)
+}
+
+func stringArrayContains(arr []string, n string) bool {
+	for _, p := range arr {
+		if p == n {
+			return true
+		}
+	}
+
+	return false
 }
