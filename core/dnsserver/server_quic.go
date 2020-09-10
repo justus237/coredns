@@ -19,6 +19,7 @@ import (
 // NextProtoDQ - During connection establishment, DoQ support is
 // indicated by selecting the ALPN token "dq" in the crypto handshake.
 const NextProtoDQ = "dq"
+const minDNSPacketSize = 12 + 5
 
 // Implemented according to https://tools.ietf.org/html/draft-huitema-dprive-dnsoquic-00
 // ServerQUIC represents an instance of a DNS-over-QUIC server.
@@ -158,14 +159,19 @@ func (s *ServerQUIC) handleQUICStream(stream quic.Stream, session quic.Session) 
 	b = s.bytesPool.Get().([]byte)
 	defer s.bytesPool.Put(b)
 
-	_, err := stream.Read(b)
-	if err != nil {
-		// The stream is closed
+	// The client MUST send the DNS query over the selected stream, and MUST
+	// indicate through the STREAM FIN mechanism that no further data will
+	// be sent on that stream.
+	// FIN is indicated via error so we should simply ignore it and
+	// check the size instead.
+	n, _ := stream.Read(b)
+	if n < minDNSPacketSize {
+		// Invalid DNS query, this stream should be ignored
 		return
 	}
 
 	msg := new(dns.Msg)
-	err = msg.Unpack(b)
+	err := msg.Unpack(b)
 	if err != nil {
 		// Invalid content
 		return
