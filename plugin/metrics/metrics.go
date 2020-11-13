@@ -3,6 +3,7 @@ package metrics
 
 import (
 	"context"
+	"io"
 	"net"
 	"net/http"
 	"sync"
@@ -91,6 +92,14 @@ func (m *Metrics) OnStartup() error {
 	m.lnSetup = true
 
 	m.mux = http.NewServeMux()
+
+	// Add health-check URL to the metrics server mux
+	// This is a necessary addition for AdGuard DNS setup
+	m.mux.HandleFunc("/health-check", func(w http.ResponseWriter, r *http.Request) {
+		// We're always healthy.
+		w.WriteHeader(http.StatusOK)
+		io.WriteString(w, http.StatusText(http.StatusOK))
+	})
 	m.mux.Handle("/metrics", promhttp.HandlerFor(m.Reg, promhttp.HandlerOpts{}))
 
 	// creating some helper variables to avoid data races on m.srv and m.ln
