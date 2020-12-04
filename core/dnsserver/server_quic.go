@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 
 	"github.com/caddyserver/caddy"
 	"github.com/coredns/coredns/plugin/pkg/reuseport"
@@ -25,6 +26,8 @@ const NextProtoDQ = "doq-i00"
 var compatProtoDQ = []string{NextProtoDQ, "dq", "doq"}
 
 const minDNSPacketSize = 12 + 5
+
+const maxQuicIdleTimeout = 5 * time.Minute
 
 // Implemented according to https://tools.ietf.org/html/draft-huitema-dprive-dnsoquic-00
 // ServerQUIC represents an instance of a DNS-over-QUIC server.
@@ -83,7 +86,7 @@ func (s *ServerQUIC) ServePacket(p net.PacketConn) error {
 		}
 	}
 
-	l, err := quic.Listen(p, s.tlsConfig, nil)
+	l, err := quic.Listen(p, s.tlsConfig, &quic.Config{MaxIdleTimeout: maxQuicIdleTimeout})
 	if err != nil {
 		return err
 	}

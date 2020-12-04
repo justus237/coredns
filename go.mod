@@ -21,7 +21,7 @@ require (
 	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/infobloxopen/go-trees v0.0.0-20190313150506-2af4e13f9062
 	github.com/kr/pretty v0.2.0 // indirect
-	github.com/lucas-clemente/quic-go v0.18.0
+	github.com/lucas-clemente/quic-go v0.18.1
 	github.com/matttproud/golang_protobuf_extensions v1.0.1
 	github.com/miekg/dns v1.1.31
 	github.com/opentracing-contrib/go-observer v0.0.0-20170622124052-a52f23424492 // indirect
