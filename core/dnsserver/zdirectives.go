@@ -28,6 +28,7 @@ var Directives = []string{
 	"log",
 	"dnstap",
 	"dns64",
+	"dnscrypt",
 	"acl",
 	"any",
 	"chaos",

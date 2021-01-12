@@ -32,6 +32,10 @@ func TestNormalizeZone(t *testing.T) {
 		{"quic://.:8443", "quic://.:8443", false},
 		{"quic://..", "://:", true},
 		{"quic://.:", "://:", true},
+		{"dnscrypt://.", "dnscrypt://.:5443", false},
+		{"dnscrypt://.:8443", "dnscrypt://.:8443", false},
+		{"dnscrypt://..", "://:", true},
+		{"dnscrypt://.:", "://:", true},
 	} {
 		addr, err := normalizeZone(test.input)
 		actual := addr.String()

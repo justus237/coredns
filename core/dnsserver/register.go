@@ -151,6 +151,14 @@ func (h *dnsContext) MakeServers() ([]caddy.Server, error) {
 				return nil, err
 			}
 			servers = append(servers, s)
+
+		case transport.DNSCrypt:
+			s, err := NewServerDNSCrypt(addr, group)
+			if err != nil {
+				return nil, err
+			}
+			servers = append(servers, s)
+
 		}
 
 	}

@@ -8,6 +8,7 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.1
 	github.com/DataDog/datadog-go v3.5.0+incompatible // indirect
 	github.com/Shopify/sarama v1.21.0 // indirect
+	github.com/ameshkov/dnscrypt/v2 v2.0.1
 	github.com/apache/thrift v0.13.0 // indirect
 	github.com/aws/aws-sdk-go v1.34.5
 	github.com/caddyserver/caddy v1.0.5
@@ -31,6 +32,7 @@ require (
 	github.com/prometheus/client_golang v1.7.1
 	github.com/prometheus/client_model v0.2.0
 	github.com/prometheus/common v0.10.0
+	github.com/stretchr/testify v1.6.1
 	go.etcd.io/etcd v0.5.0-alpha.5.0.20200306183522-221f0cc107cb
 	go.uber.org/zap v1.14.1 // indirect
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
@@ -38,6 +40,7 @@ require (
 	google.golang.org/api v0.29.0
 	google.golang.org/grpc v1.29.1
 	gopkg.in/DataDog/dd-trace-go.v1 v1.26.0
+	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 	k8s.io/api v0.18.8
 	k8s.io/apimachinery v0.18.8
 	k8s.io/client-go v0.18.8

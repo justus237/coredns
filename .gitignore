@@ -5,3 +5,6 @@ build/
 release/
 vendor/
 .idea
+
+Corefile
+dnscrypt.yaml

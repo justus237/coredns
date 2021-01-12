@@ -17,6 +17,7 @@ func TestTransport(t *testing.T) {
 		{"tls://example.org ", transport.TLS},
 		{"https://example.org ", transport.HTTPS},
 		{"quic://example.org ", transport.QUIC},
+		{"dnscrypt://example.org ", transport.DNSCrypt},
 	} {
 		actual, _ := Transport(test.input)
 		if actual != test.expected {

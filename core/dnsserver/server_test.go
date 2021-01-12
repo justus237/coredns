@@ -51,6 +51,11 @@ func TestNewServer(t *testing.T) {
 	if err != nil {
 		t.Errorf("Expected no error for NewServerQUIC, got %s", err)
 	}
+
+	_, err = NewServerDNSCrypt("127.0.0.1:5443", []*Config{testConfig("dnscrypt", testPlugin{})})
+	if err != nil {
+		t.Errorf("Expected no error for NewServerDNSCrypt, got %s", err)
+	}
 }
 
 func BenchmarkCoreServeDNS(b *testing.B) {

@@ -2,11 +2,12 @@ package transport
 
 // These transports are supported by CoreDNS.
 const (
-	DNS   = "dns"
-	TLS   = "tls"
-	GRPC  = "grpc"
-	HTTPS = "https"
-	QUIC  = "quic"
+	DNS      = "dns"
+	TLS      = "tls"
+	GRPC     = "grpc"
+	HTTPS    = "https"
+	QUIC     = "quic"
+	DNSCrypt = "dnscrypt"
 )
 
 // Port numbers for the various transports.
@@ -22,4 +23,6 @@ const (
 	// QUICPort is the default port for DNS-over-QUIC
 	// https://tools.ietf.org/id/draft-huitema-quic-dnsoquic-06.html#port-number-784-for-experimentations
 	QUICPort = "784"
+	// DNSCryptPort is the default port for  DNSCrypt
+	DNSCryptPort = "5443"
 )

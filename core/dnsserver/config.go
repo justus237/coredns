@@ -40,6 +40,9 @@ type Config struct {
 	// TLSConfig when listening for encrypted connections (gRPC, DNS-over-TLS).
 	TLSConfig *tls.Config
 
+	// DNSCryptConfig when listening for encrypted connections (DNSCrypt).
+	DNSCryptConfig []byte
+
 	// Plugin stack.
 	Plugin []plugin.Plugin
 
