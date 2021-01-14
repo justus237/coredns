@@ -8,6 +8,7 @@ import (
 	"github.com/coredns/coredns/plugin/test"
 
 	"github.com/miekg/dns"
+	"gopkg.in/yaml.v3"
 )
 
 type testPlugin struct{}
@@ -52,7 +53,25 @@ func TestNewServer(t *testing.T) {
 		t.Errorf("Expected no error for NewServerQUIC, got %s", err)
 	}
 
-	_, err = NewServerDNSCrypt("127.0.0.1:5443", []*Config{testConfig("dnscrypt", testPlugin{})})
+}
+
+func TestNewServerDNSCrypt(t *testing.T) {
+
+	config := []byte(`provider_name: 2.dnscrypt-cert.example.org
+public_key: C6BF67CC9C88CC3EAA7577D2FCA6C37A6C4EDB9C548E789EFE65BB7C0410737B
+private_key: B0B6DBF5BA3DA876992C092559AE044C0AFF30BF6F8C76496090E2881E4F479DC6BF67CC9C88CC3EAA7577D2FCA6C37A6C4EDB9C548E789EFE65BB7C0410737B
+resolver_secret: D7CB5AD6F0C4CDFEDD58541C95EED5030A0E01B8FFDD953D9B64D5B8ACA83820
+resolver_public: 46F5E9EE56788B7272946FF5A355AE80D0F2574E4F698EB5EDE8D7290DC7B00F
+es_version: 1
+certificate_ttl: 0s`)
+
+	dnscryptCfg := testConfig("dnscrypt", testPlugin{})
+	err := yaml.Unmarshal(config, &dnscryptCfg.DNSCryptConfig)
+	if err != nil {
+		t.Fatalf("Expected no error for unmarshall test config data, got %s", err)
+	}
+
+	_, err = NewServerDNSCrypt("127.0.0.1:5443", []*Config{dnscryptCfg})
 	if err != nil {
 		t.Errorf("Expected no error for NewServerDNSCrypt, got %s", err)
 	}

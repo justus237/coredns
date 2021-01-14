@@ -16,6 +16,19 @@ dnscrypt://.:5443 {
 }
 ~~~
 
+or
+
+~~~ txt
+dnscrypt://.:5443 {
+    dnscrypt {
+        provider_name: 2.dnscrypt-cert.example.org
+        ...
+    }
+}
+~~~
+
+Configuration from yaml file has a lower priority and can be overwritten by parameters from Corefile.
+
 ## Examples
 
 ~~~

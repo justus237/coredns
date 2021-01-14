@@ -6,6 +6,7 @@ import (
 
 	"github.com/coredns/coredns/plugin"
 
+	"github.com/ameshkov/dnscrypt/v2"
 	"github.com/caddyserver/caddy"
 )
 
@@ -41,7 +42,7 @@ type Config struct {
 	TLSConfig *tls.Config
 
 	// DNSCryptConfig when listening for encrypted connections (DNSCrypt).
-	DNSCryptConfig []byte
+	DNSCryptConfig *dnscrypt.ResolverConfig
 
 	// Plugin stack.
 	Plugin []plugin.Plugin

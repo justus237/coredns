@@ -1,55 +1,77 @@
 package dnscrypt
 
 import (
+	"fmt"
 	"io/ioutil"
 	"strings"
 
 	"github.com/caddyserver/caddy"
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
+	"gopkg.in/yaml.v3"
 )
 
-const defaultName = "dnscrypt.yaml"
+const (
+	dnsCryptKey = "dnscrypt"
+)
 
-func init() { plugin.Register("dnscrypt", setup) }
+func init() {
+	plugin.Register(dnsCryptKey, setup)
+}
 
 func setup(c *caddy.Controller) error {
 	err := parse(c)
 	if err != nil {
-		return plugin.Error("dnscrypt", err)
+		return plugin.Error(dnsCryptKey, err)
 	}
 	return nil
 }
 
-func parse(c *caddy.Controller) error {
+func parse(c *caddy.Controller) (err error) {
+
 	config := dnsserver.GetConfig(c)
 
-	if config.DNSCryptConfig != nil {
-		txt := "DNSCrypt already configured for this server instance"
-		return plugin.Error("dnscrypt", c.Errf(txt))
-	}
+	var coreFileTxt string
+	var coreFileCfg []byte
 
-	args := c.Dispenser.RemainingArgs()
+	var yamlName string
+	var yamlCfg []byte
 
-	filename := ""
-	for _, arg := range args {
-		yamlSuffix := strings.HasSuffix(arg, ".yaml")
-		ymlSuffix := strings.HasSuffix(arg, ".yml")
-		if ymlSuffix || yamlSuffix {
-			filename = arg
+	for i := 0; c.Next(); i++ {
+		keyVal := c.Val()
+
+		if keyVal == dnsCryptKey && c.NextArg() {
+			name := c.Val()
+			if strings.HasSuffix(name, "yaml") || strings.HasSuffix(name, "yml") {
+				yamlName = name
+			}
+		}
+
+		if strings.HasSuffix(keyVal, ":") && c.NextArg() {
+			coreFileTxt += fmt.Sprintf("%s %s\n", keyVal, c.Val())
 		}
 	}
 
-	if filename == "" {
-		filename = defaultName
+	if yamlName != "" {
+		yamlCfg, err = ioutil.ReadFile(yamlName)
+		if err != nil {
+			return plugin.Error("read yaml file", err)
+		}
 	}
 
-	data, err := ioutil.ReadFile(filename)
+	if coreFileTxt != "" {
+		coreFileCfg = append(coreFileCfg, []byte(coreFileTxt)...)
+	}
+
+	err = yaml.Unmarshal(yamlCfg, &config.DNSCryptConfig)
 	if err != nil {
-		return plugin.Error("file", err)
+		return plugin.Error("unmarshal yaml", err)
 	}
 
-	config.DNSCryptConfig = data
+	err = yaml.Unmarshal(coreFileCfg, &config.DNSCryptConfig)
+	if err != nil {
+		return plugin.Error("unmarshal corefile", err)
+	}
 
-	return nil
+	return
 }

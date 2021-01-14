@@ -9,7 +9,6 @@ import (
 	"github.com/ameshkov/dnscrypt/v2"
 	"github.com/coredns/coredns/plugin/pkg/reuseport"
 	"github.com/coredns/coredns/plugin/pkg/transport"
-	"gopkg.in/yaml.v3"
 )
 
 type ServerDNSCrypt struct {
@@ -33,12 +32,9 @@ func NewServerDNSCrypt(addr string, group []*Config) (*ServerDNSCrypt, error) {
 
 	var resolverConfig *dnscrypt.ResolverConfig
 	for _, conf := range s.zones {
+		resolverConfig = conf.DNSCryptConfig
 		if resolverConfig != nil {
 			break
-		}
-		err = yaml.Unmarshal(conf.DNSCryptConfig, &resolverConfig)
-		if err != nil {
-			return nil, err
 		}
 	}
 	if resolverConfig == nil {
