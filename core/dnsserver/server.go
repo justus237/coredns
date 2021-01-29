@@ -107,10 +107,14 @@ var _ caddy.GracefulServer = &Server{}
 // This implements caddy.TCPServer interface.
 func (s *Server) Serve(l net.Listener) error {
 	s.m.Lock()
-	s.server[tcp] = &dns.Server{Listener: l, Net: "tcp", Handler: dns.HandlerFunc(func(w dns.ResponseWriter, r *dns.Msg) {
-		ctx := context.WithValue(context.Background(), Key{}, s)
-		s.ServeDNS(ctx, w, r)
-	})}
+	s.server[tcp] = &dns.Server{
+		Listener: l,
+		Net:      "tcp",
+		MaxTCPQueries: -1,
+		Handler: dns.HandlerFunc(func(w dns.ResponseWriter, r *dns.Msg) {
+			ctx := context.WithValue(context.Background(), Key{}, s)
+			s.ServeDNS(ctx, w, r)
+		})}
 	s.m.Unlock()
 
 	return s.server[tcp].ActivateAndServe()

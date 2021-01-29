@@ -1,3 +1,12 @@
+# CoreDNS fork for AdGuard DNS
+
+Changes we implemented, that have not been yet sent to the upstream:
+
+* DNS-over-QUIC server-side support
+* DNSCrypt server-side support
+* Always compress DNS responses
+* Set MaxTCPQueries to unlimited
+
 [![CoreDNS](https://coredns.io/images/CoreDNS_Colour_Horizontal.png)](https://coredns.io)
 
 [![Documentation](https://img.shields.io/badge/godoc-reference-blue.svg)](https://godoc.org/github.com/coredns/coredns)
