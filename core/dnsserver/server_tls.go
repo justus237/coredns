@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/coredns/coredns/plugin/pkg/reuseport"
 	"github.com/coredns/coredns/plugin/pkg/transport"
@@ -48,10 +49,19 @@ func (s *ServerTLS) Serve(l net.Listener) error {
 	}
 
 	// Only fill out the TCP server for this one.
-	s.server[tcp] = &dns.Server{Listener: l, Net: "tcp-tls", Handler: dns.HandlerFunc(func(w dns.ResponseWriter, r *dns.Msg) {
-		ctx := context.WithValue(context.Background(), Key{}, s.Server)
-		s.ServeDNS(ctx, w, r)
-	})}
+	s.server[tcp] = &dns.Server{
+		Listener: l,
+		Net:      "tcp-tls",
+		MaxTCPQueries: -1,
+		IdleTimeout: func() time.Duration {
+			// It's recommended to have higher timeout for DNS-over-TLS:
+			// https://tools.ietf.org/html/rfc7858#section-3.4
+			return 60 * time.Second
+		},
+		Handler: dns.HandlerFunc(func(w dns.ResponseWriter, r *dns.Msg) {
+			ctx := context.WithValue(context.Background(), Key{}, s.Server)
+			s.ServeDNS(ctx, w, r)
+		})}
 	s.m.Unlock()
 
 	return s.server[tcp].ActivateAndServe()
