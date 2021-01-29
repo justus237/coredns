@@ -56,7 +56,9 @@ func (s *ServerTLS) Serve(l net.Listener) error {
 		IdleTimeout: func() time.Duration {
 			// It's recommended to have higher timeout for DNS-over-TLS:
 			// https://tools.ietf.org/html/rfc7858#section-3.4
-			return 60 * time.Second
+			// Android has it at 20 seconds so let's use the same:
+			// packages/modules/DnsResolver/DnsTlsSocket.h
+			return 20 * time.Second
 		},
 		Handler: dns.HandlerFunc(func(w dns.ResponseWriter, r *dns.Msg) {
 			ctx := context.WithValue(context.Background(), Key{}, s.Server)
