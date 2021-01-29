@@ -6,7 +6,6 @@ Changes we implemented, that have not been yet sent to the upstream:
 * DNSCrypt server-side support
 * Always compress DNS responses
 * Set MaxTCPQueries to unlimited
-* Increase IdleTimeout for the TCP and TLS servers
 
 [![CoreDNS](https://coredns.io/images/CoreDNS_Colour_Horizontal.png)](https://coredns.io)
 
