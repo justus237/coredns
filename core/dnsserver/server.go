@@ -110,7 +110,6 @@ func (s *Server) Serve(l net.Listener) error {
 	s.server[tcp] = &dns.Server{
 		Listener: l,
 		Net:      "tcp",
-		MaxTCPQueries: -1,
 		Handler: dns.HandlerFunc(func(w dns.ResponseWriter, r *dns.Msg) {
 			ctx := context.WithValue(context.Background(), Key{}, s)
 			s.ServeDNS(ctx, w, r)
