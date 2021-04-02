@@ -6,5 +6,6 @@ release/
 vendor/
 .idea
 
+# for debugging locally
 Corefile
-dnscrypt.yaml
+testserver/

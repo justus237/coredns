@@ -16,18 +16,20 @@ import (
 	"github.com/miekg/dns"
 )
 
-// 4.1.  Connection Establishment
-// NextProtoDQ - During connection establishment, DoQ support is
-// indicated by selecting the ALPN token "doq" in the crypto handshake.
-// Current draft version: https://tools.ietf.org/html/draft-ietf-dprive-dnsoquic-00
-const NextProtoDQ = "doq-i00"
+// NextProtoDQ - During connection establishment, DNS/QUIC support is indicated
+// by selecting the ALPN token "dq" in the crypto handshake.
+// Current draft version: https://datatracker.ietf.org/doc/html/draft-ietf-dprive-dnsoquic-02
+const NextProtoDQ = "doq-i02"
 
-// compatProtoDQ - DOQ ALPN + old ALPNs for backwards compatibility
-var compatProtoDQ = []string{NextProtoDQ, "dq", "doq"}
+// compatProtoDQ - ALPNs for backwards compatibility
+var compatProtoDQ = []string{NextProtoDQ, "doq-i00", "dq", "doq"}
+
+// maxQuicIdleTimeout - maximum QUIC idle timeout.
+// Default value in quic-go is 30, but our internal tests show that
+// a higher value works better for clients written with ngtcp2
+const maxQuicIdleTimeout = 5 * time.Minute
 
 const minDNSPacketSize = 12 + 5
-
-const maxQuicIdleTimeout = 5 * time.Minute
 
 // Implemented according to https://tools.ietf.org/html/draft-huitema-dprive-dnsoquic-00
 // ServerQUIC represents an instance of a DNS-over-QUIC server.
@@ -179,6 +181,20 @@ func (s *ServerQUIC) handleQUICStream(stream quic.Stream, session quic.Session) 
 	if err != nil {
 		// Invalid content
 		return
+	}
+
+	// If any message sent on a DoQ connection contains an edns-tcp-keepalive EDNS(0) Option,
+	// this is a fatal error and the recipient of the defective message MUST forcibly abort
+	// the connection immediately.
+	// https://datatracker.ietf.org/doc/html/draft-ietf-dprive-dnsoquic-02#section-6.6.2
+	if opt := msg.IsEdns0(); opt != nil {
+		for _, option := range opt.Option {
+			// Check for EDNS TCP keepalive option
+			if option.Option() == dns.EDNS0TCPKEEPALIVE {
+				// Already closing the connection so we don't care about the error
+				_ = session.CloseWithError(0, "")
+			}
+		}
 	}
 
 	// Consider renaming DoHWriter or creating a new struct for QUIC
