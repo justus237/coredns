@@ -29,7 +29,7 @@ func parseHTTPProxy(c *caddy.Controller) error {
 	config := dnsserver.GetConfig(c)
 
 	if config.HTTPProxy != nil {
-		return plugin.Error("tls", c.Errf("HTTPProxy already configured for this server instance"))
+		return plugin.Error(pluginName, c.Errf("HTTPProxy already configured for this server instance"))
 	}
 
 	for c.Next() {
