@@ -35,6 +35,16 @@ The option value corresponds to the [ClientAuthType values of the Go tls package
 The default is "nocert".  Note that it makes no sense to specify parameter CA unless this option is
 set to verify\_if\_given or require\_and\_verify.
 
+~~~ txt
+tls CERT KEY [CA] {
+    session_ticket_key [FILE1]
+    session_ticket_key [FILE2]
+    session_ticket_key [FILE3]
+}
+~~~
+
+If `session_ticket_key` is specified, it controls server TLS session tickets. The first key will be used when creating new tickets, while all keys can be used for decrypting tickets.
+
 ## Examples
 
 Start a DNS-over-TLS server that picks up incoming DNS-over-TLS queries on port 5553 and uses the

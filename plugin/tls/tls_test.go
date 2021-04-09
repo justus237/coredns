@@ -18,6 +18,8 @@ func TestTLS(t *testing.T) {
 		expectedErrContent string // substring from the expected error. Empty for positive cases.
 	}{
 		// positive
+		{"tls test_cert.pem test_key.pem test_ca.pem {\nsession_ticket_key test_session_ticket.key\n}", false, "", ""},
+		{"tls test_cert.pem test_key.pem test_ca.pem {\nsession_ticket_key test_session_ticket.key\nsession_ticket_key test_session_ticket.key\n}", false, "", ""},
 		// negative
 		{"tls test_cert.pem test_key.pem test_ca.pem {\nunknown\n}", true, "", "unknown option"},
 		// client_auth takes exactly one parameter, which must be one of known keywords.

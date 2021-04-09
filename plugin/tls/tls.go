@@ -2,6 +2,11 @@ package tls
 
 import (
 	ctls "crypto/tls"
+	"errors"
+	"io/ioutil"
+	"time"
+
+	clog "github.com/coredns/coredns/plugin/pkg/log"
 
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
@@ -9,6 +14,8 @@ import (
 
 	"github.com/caddyserver/caddy"
 )
+
+const reloadPeriod = time.Minute
 
 func init() { plugin.Register("tls", setup) }
 
@@ -50,6 +57,7 @@ func parseTLS(c *caddy.Controller) error {
 			return plugin.Error("tls", c.ArgErr())
 		}
 		clientAuth := ctls.NoClientCert
+		var sessionTicketKeysFiles []string
 		for c.NextBlock() {
 			switch c.Val() {
 			case "client_auth":
@@ -71,6 +79,12 @@ func parseTLS(c *caddy.Controller) error {
 				default:
 					return c.Errf("unknown authentication type '%s'", authTypeArgs[0])
 				}
+			case "session_ticket_key":
+				files := c.RemainingArgs()
+				if len(files) == 0 {
+					return c.ArgErr()
+				}
+				sessionTicketKeysFiles = append(sessionTicketKeysFiles, files...)
 			default:
 				return c.Errf("unknown option '%s'", c.Val())
 			}
@@ -85,7 +99,55 @@ func parseTLS(c *caddy.Controller) error {
 
 		setTLSDefaults(tls)
 
+		if sessionTicketKeysFiles != nil {
+			err = loadSessionTickets(tls, sessionTicketKeysFiles)
+			if err != nil {
+				return err
+			}
+			go reloadSessionTickets(tls, sessionTicketKeysFiles)
+		}
+
 		config.TLSConfig = tls
 	}
+	return nil
+}
+
+func reloadSessionTickets(tls *ctls.Config, sessionTicketKeysFiles []string) {
+	ticker := time.NewTicker(reloadPeriod)
+	defer ticker.Stop()
+
+	// sleep the first time -- we've already loaded the list
+	time.Sleep(reloadPeriod)
+
+	for t := range ticker.C {
+		_ = t // we don't print the ticker time, so assign this `t` variable to underscore `_` to avoid error
+		_ = loadSessionTickets(tls, sessionTicketKeysFiles)
+	}
+}
+
+func loadSessionTickets(tls *ctls.Config, sessionTicketKeysFiles []string) error {
+	var keys [][32]byte
+
+	for _, file := range sessionTicketKeysFiles {
+		b, err := ioutil.ReadFile(file)
+		if err != nil || len(b) < 32 {
+			tlsSessionTicketsRotateStatus.Set(0)
+			clog.Errorf("failed to read session ticket from %s", file)
+			return err
+		}
+
+		key := [32]byte{}
+		copy(key[:], b[len(b)-32:])
+		keys = append(keys, key)
+	}
+
+	if len(keys) == 0 {
+		clog.Errorf("found no session tickets")
+		return errors.New("no keys found")
+	}
+
+	tls.SetSessionTicketKeys(keys)
+	tlsSessionTicketsRotateTime.SetToCurrentTime()
+	tlsSessionTicketsRotateStatus.Set(1)
 	return nil
 }

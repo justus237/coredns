@@ -3,6 +3,7 @@ package dnsserver
 import (
 	"crypto/tls"
 	"fmt"
+	"net/http"
 
 	"github.com/coredns/coredns/plugin"
 
@@ -43,6 +44,9 @@ type Config struct {
 
 	// DNSCryptConfig when listening for encrypted connections (DNSCrypt).
 	DNSCryptConfig *dnscrypt.ResolverConfig
+
+	// HTTPProxy is a handler that is supplied by the "httpproxy" plugin
+	HTTPProxy http.Handler
 
 	// Plugin stack.
 	Plugin []plugin.Plugin

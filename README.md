@@ -5,6 +5,8 @@ Changes we implemented, that have not been yet sent to the upstream:
 * DNS-over-QUIC server-side support
 * DNSCrypt server-side support
 * Always compress DNS responses
+* Added session tickets keys + rotation support
+* Added httpproxy plugin
 
 [![CoreDNS](https://coredns.io/images/CoreDNS_Colour_Horizontal.png)](https://coredns.io)
 

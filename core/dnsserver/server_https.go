@@ -26,6 +26,7 @@ type ServerHTTPS struct {
 	httpsServer *http.Server
 	listenAddr  net.Addr
 	tlsConfig   *tls.Config
+	httpProxy   http.Handler
 }
 
 // NewServerHTTPS returns a new CoreDNS GRPC server and compiles all plugins in to it.
@@ -37,9 +38,12 @@ func NewServerHTTPS(addr string, group []*Config) (*ServerHTTPS, error) {
 	// The *tls* plugin must make sure that multiple conflicting
 	// TLS configuration return an error: it can only be specified once.
 	var tlsConfig *tls.Config
+	var httpProxy http.Handler
 	for _, conf := range s.zones {
 		// Should we error if some configs *don't* have TLS?
 		tlsConfig = conf.TLSConfig
+		httpProxy = conf.HTTPProxy
+
 	}
 
 	srv := &http.Server{
@@ -47,7 +51,12 @@ func NewServerHTTPS(addr string, group []*Config) (*ServerHTTPS, error) {
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
-	sh := &ServerHTTPS{Server: s, tlsConfig: tlsConfig, httpsServer: srv}
+	sh := &ServerHTTPS{
+		Server:      s,
+		tlsConfig:   tlsConfig,
+		httpsServer: srv,
+		httpProxy:   httpProxy,
+	}
 	sh.httpsServer.Handler = sh
 
 	// Disable HTTPS server logging since it spams stdout with unrelated information
@@ -115,9 +124,12 @@ func (s *ServerHTTPS) Stop() error {
 // ServeHTTP is the handler that gets the HTTP request and converts to the dns format, calls the plugin
 // chain, converts it back and write it to the client.
 func (s *ServerHTTPS) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
 	if r.URL.Path != doh.Path {
-		http.Error(w, "", http.StatusNotFound)
+		if s.httpProxy != nil {
+			s.httpProxy.ServeHTTP(w, r)
+		} else {
+			http.Error(w, "", http.StatusNotFound)
+		}
 		return
 	}
 

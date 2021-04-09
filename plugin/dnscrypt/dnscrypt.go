@@ -12,24 +12,27 @@ import (
 )
 
 const (
-	dnsCryptKey = "dnscrypt"
+	pluginName = "dnscrypt"
 )
 
 func init() {
-	plugin.Register(dnsCryptKey, setup)
+	plugin.Register(pluginName, setup)
 }
 
 func setup(c *caddy.Controller) error {
 	err := parse(c)
 	if err != nil {
-		return plugin.Error(dnsCryptKey, err)
+		return plugin.Error(pluginName, err)
 	}
 	return nil
 }
 
 func parse(c *caddy.Controller) (err error) {
-
 	config := dnsserver.GetConfig(c)
+
+	if config.DNSCryptConfig != nil {
+		return plugin.Error(pluginName, c.Errf("DNSCryptConfig already configured for this server instance"))
+	}
 
 	var coreFileTxt string
 	var coreFileCfg []byte
@@ -40,7 +43,7 @@ func parse(c *caddy.Controller) (err error) {
 	for i := 0; c.Next(); i++ {
 		keyVal := c.Val()
 
-		if keyVal == dnsCryptKey && c.NextArg() {
+		if keyVal == pluginName && c.NextArg() {
 			name := c.Val()
 			if strings.HasSuffix(name, "yaml") || strings.HasSuffix(name, "yml") {
 				yamlName = name
@@ -55,7 +58,7 @@ func parse(c *caddy.Controller) (err error) {
 	if yamlName != "" {
 		yamlCfg, err = ioutil.ReadFile(yamlName)
 		if err != nil {
-			return plugin.Error("read yaml file", err)
+			return plugin.Error(pluginName, err)
 		}
 	}
 
@@ -65,12 +68,12 @@ func parse(c *caddy.Controller) (err error) {
 
 	err = yaml.Unmarshal(yamlCfg, &config.DNSCryptConfig)
 	if err != nil {
-		return plugin.Error("unmarshal yaml", err)
+		return plugin.Error(pluginName, err)
 	}
 
 	err = yaml.Unmarshal(coreFileCfg, &config.DNSCryptConfig)
 	if err != nil {
-		return plugin.Error("unmarshal corefile", err)
+		return plugin.Error(pluginName, err)
 	}
 
 	return
