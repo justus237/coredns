@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net"
 	"net/http"
 	"strconv"
@@ -47,6 +49,11 @@ func NewServerHTTPS(addr string, group []*Config) (*ServerHTTPS, error) {
 	}
 	sh := &ServerHTTPS{Server: s, tlsConfig: tlsConfig, httpsServer: srv}
 	sh.httpsServer.Handler = sh
+
+	// Disable HTTPS server logging since it spams stdout with unrelated information
+	l := log.Logger{}
+	l.SetOutput(ioutil.Discard)
+	sh.httpsServer.ErrorLog = &l
 
 	return sh, nil
 }
