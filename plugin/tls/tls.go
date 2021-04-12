@@ -3,16 +3,15 @@ package tls
 import (
 	ctls "crypto/tls"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"time"
 
 	clog "github.com/coredns/coredns/plugin/pkg/log"
 
+	"github.com/caddyserver/caddy"
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
-	"github.com/coredns/coredns/plugin/pkg/tls"
-
-	"github.com/caddyserver/caddy"
 )
 
 const reloadPeriod = time.Minute
@@ -53,7 +52,7 @@ func parseTLS(c *caddy.Controller) error {
 
 	for c.Next() {
 		args := c.RemainingArgs()
-		if len(args) < 2 || len(args) > 3 {
+		if len(args) == 0 || len(args)%2 != 0 {
 			return plugin.Error("tls", c.ArgErr())
 		}
 		clientAuth := ctls.NoClientCert
@@ -89,7 +88,7 @@ func parseTLS(c *caddy.Controller) error {
 				return c.Errf("unknown option '%s'", c.Val())
 			}
 		}
-		tls, err := tls.NewTLSConfigFromArgs(args...)
+		tls, err := newTlsConfigFromArgs(args)
 		if err != nil {
 			return err
 		}
@@ -150,4 +149,24 @@ func loadSessionTickets(tls *ctls.Config, sessionTicketKeysFiles []string) error
 	tlsSessionTicketsRotateTime.SetToCurrentTime()
 	tlsSessionTicketsRotateStatus.Set(1)
 	return nil
+}
+
+func newTlsConfigFromArgs(args []string) (*ctls.Config, error) {
+	if len(args)%2 != 0 {
+		return nil, errors.New("invalid number of tls arguments")
+	}
+
+	var certs []ctls.Certificate
+
+	for i := 0; i < len(args); i += 2 {
+		tlsArgs := args[i : i+2]
+
+		cert, err := ctls.LoadX509KeyPair(tlsArgs[0], tlsArgs[1])
+		if err != nil {
+			return nil, fmt.Errorf("could not load TLS cert: %s", err)
+		}
+		certs = append(certs, cert)
+	}
+
+	return &ctls.Config{Certificates: certs}, nil
 }
