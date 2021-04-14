@@ -8,7 +8,7 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.1
 	github.com/DataDog/datadog-go v3.5.0+incompatible // indirect
 	github.com/Shopify/sarama v1.21.0 // indirect
-	github.com/ameshkov/dnscrypt/v2 v2.1.0
+	github.com/ameshkov/dnscrypt/v2 v2.1.3
 	github.com/apache/thrift v0.13.0 // indirect
 	github.com/aws/aws-sdk-go v1.34.5
 	github.com/caddyserver/caddy v1.0.5
