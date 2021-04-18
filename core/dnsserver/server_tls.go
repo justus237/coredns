@@ -4,9 +4,10 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"net"
+
 	"github.com/coredns/coredns/plugin/pkg/reuseport"
 	"github.com/coredns/coredns/plugin/pkg/transport"
-	"net"
 
 	"github.com/caddyserver/caddy"
 	"github.com/miekg/dns"
@@ -42,14 +43,11 @@ var _ caddy.GracefulServer = &Server{}
 func (s *ServerTLS) Serve(l net.Listener) error {
 	s.m.Lock()
 
-	if s.tlsConfig != nil {
-		l = tls.NewListener(l, s.tlsConfig)
-	}
-
 	// Only fill out the TCP server for this one.
 	s.server[tcp] = &dns.Server{
-		Listener: l,
-		Net:      "tcp-tls",
+		Listener:  l,
+		TLSConfig: s.tlsConfig,
+		Net:       "tcp-tls",
 		Handler: dns.HandlerFunc(func(w dns.ResponseWriter, r *dns.Msg) {
 			ctx := context.WithValue(context.Background(), Key{}, s.Server)
 			s.ServeDNS(ctx, w, r)

@@ -46,3 +46,5 @@ require (
 	k8s.io/client-go v0.18.8
 	k8s.io/klog v1.0.0
 )
+
+replace github.com/miekg/dns => github.com/AdguardTeam/dns v1.1.36-0.20210418202051-8d374884b44d
