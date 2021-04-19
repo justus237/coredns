@@ -41,7 +41,7 @@ func NewServerHTTPS(addr string, group []*Config) (*ServerHTTPS, error) {
 	var httpProxy http.Handler
 	for _, conf := range s.zones {
 		// Should we error if some configs *don't* have TLS?
-		tlsConfig = conf.TLSConfig
+		tlsConfig = conf.TLSConfigHTTPS
 		httpProxy = conf.HTTPProxy
 	}
 

@@ -45,7 +45,7 @@ func NewServerQUIC(addr string, group []*Config) (*ServerQUIC, error) {
 	var tlsConfig *tls.Config
 	for _, conf := range s.zones {
 		// Should we error if some configs *don't* have TLS?
-		tlsConfig = conf.TLSConfig
+		tlsConfig = conf.TLSConfigQUIC
 	}
 
 	bytesPool := sync.Pool{

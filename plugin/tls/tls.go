@@ -19,11 +19,13 @@ import (
 // Current draft version: https://datatracker.ietf.org/doc/html/draft-ietf-dprive-dnsoquic-02
 const NextProtoDQ = "doq-i02"
 
-// nextProtos - ALPNs for the server
-var nextProtos = []string{
-	// DoQ ALPNs
+// nextProtosDQ are ALPNs for a DNS-over-QUIC server
+var nextProtosDoQ = []string{
 	NextProtoDQ, "doq-i00", "dq", "doq",
-	// DoH ALPNs
+}
+
+// nextProtosDoH are ALPNs for a DNS-over-HTTPS server
+var nextProtosDoH = []string{
 	"h2", "http/1.1",
 }
 
@@ -54,9 +56,6 @@ func setTLSDefaults(tls *ctls.Config) {
 		ctls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
 	}
 	tls.PreferServerCipherSuites = true
-
-	// Adding ALPN tokens for DoH/ DoQ
-	tls.NextProtos = nextProtos
 }
 
 func parseTLS(c *caddy.Controller) error {
@@ -114,15 +113,32 @@ func parseTLS(c *caddy.Controller) error {
 
 		setTLSDefaults(tls)
 
+		// Load the default set of session tickets
 		if sessionTicketKeysFiles != nil {
 			err = loadSessionTickets(tls, sessionTicketKeysFiles)
 			if err != nil {
 				return err
 			}
-			go reloadSessionTickets(tls, sessionTicketKeysFiles)
 		}
 
+		// DNS-over-QUIC config
+		tlsDoQ := tls.Clone()
+		tlsDoQ.NextProtos = nextProtosDoQ
+
+		// DNS-over-HTTPS config
+		tlsDoH := tls.Clone()
+		tlsDoH.NextProtos = nextProtosDoH
+
 		config.TLSConfig = tls
+		config.TLSConfigQUIC = tlsDoQ
+		config.TLSConfigHTTPS = tlsDoH
+
+		// Schedule reloading of the TLS session tickets
+		if sessionTicketKeysFiles != nil {
+			go reloadSessionTickets(tls, sessionTicketKeysFiles)
+			go reloadSessionTickets(tlsDoQ, sessionTicketKeysFiles)
+			go reloadSessionTickets(tlsDoH, sessionTicketKeysFiles)
+		}
 	}
 	return nil
 }

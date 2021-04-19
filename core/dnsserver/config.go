@@ -42,6 +42,12 @@ type Config struct {
 	// TLSConfig when listening for encrypted connections (gRPC, DNS-over-TLS).
 	TLSConfig *tls.Config
 
+	// TLSConfigHTTPS is a tls.Config for DNS-over-HTTPS
+	TLSConfigHTTPS *tls.Config
+
+	// TLSConfigQUIC is a tls.Config for DNS-over-QUIC
+	TLSConfigQUIC *tls.Config
+
 	// DNSCryptConfig when listening for encrypted connections (DNSCrypt).
 	DNSCryptConfig *dnscrypt.ResolverConfig
 
