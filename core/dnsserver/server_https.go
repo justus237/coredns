@@ -43,7 +43,6 @@ func NewServerHTTPS(addr string, group []*Config) (*ServerHTTPS, error) {
 		// Should we error if some configs *don't* have TLS?
 		tlsConfig = conf.TLSConfig
 		httpProxy = conf.HTTPProxy
-
 	}
 
 	srv := &http.Server{

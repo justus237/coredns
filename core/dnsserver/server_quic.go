@@ -16,14 +16,6 @@ import (
 	"github.com/miekg/dns"
 )
 
-// NextProtoDQ - During connection establishment, DNS/QUIC support is indicated
-// by selecting the ALPN token "dq" in the crypto handshake.
-// Current draft version: https://datatracker.ietf.org/doc/html/draft-ietf-dprive-dnsoquic-02
-const NextProtoDQ = "doq-i02"
-
-// compatProtoDQ - ALPNs for backwards compatibility
-var compatProtoDQ = []string{NextProtoDQ, "doq-i00", "dq", "doq"}
-
 // maxQuicIdleTimeout - maximum QUIC idle timeout.
 // Default value in quic-go is 30, but our internal tests show that
 // a higher value works better for clients written with ngtcp2
@@ -79,13 +71,6 @@ func (s *ServerQUIC) ServePacket(p net.PacketConn) error {
 
 	if s.tlsConfig == nil {
 		return errors.New("cannot run a QUIC server without TLS config")
-	}
-
-	// Adding ALPN tokens for DoQ
-	for _, a := range compatProtoDQ {
-		if !stringArrayContains(s.tlsConfig.NextProtos, a) {
-			s.tlsConfig.NextProtos = append(s.tlsConfig.NextProtos, a)
-		}
 	}
 
 	l, err := quic.Listen(p, s.tlsConfig, &quic.Config{MaxIdleTimeout: maxQuicIdleTimeout})
@@ -213,14 +198,4 @@ func (s *ServerQUIC) handleQUICStream(stream quic.Stream, session quic.Session) 
 	// Write the response
 	buf, _ := dw.Msg.Pack()
 	_, _ = stream.Write(buf)
-}
-
-func stringArrayContains(arr []string, n string) bool {
-	for _, p := range arr {
-		if p == n {
-			return true
-		}
-	}
-
-	return false
 }
