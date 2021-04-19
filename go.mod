@@ -47,4 +47,4 @@ require (
 	k8s.io/klog v1.0.0
 )
 
-replace github.com/miekg/dns => github.com/AdguardTeam/dns v1.1.36-0.20210418202051-8d374884b44d
+replace github.com/miekg/dns => github.com/AdguardTeam/dns v1.1.36-0.20210419155929-219f9adffc16
