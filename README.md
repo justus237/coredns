@@ -8,6 +8,7 @@ Changes we implemented, that have not been yet sent to the upstream:
 * Added session tickets keys + rotation support
 * Added httpproxy plugin
 * Added support for multiple cert chains to the "tls" plugin
+* Write stack trace to log when panic happens
 
 [![CoreDNS](https://coredns.io/images/CoreDNS_Colour_Horizontal.png)](https://coredns.io)
 
