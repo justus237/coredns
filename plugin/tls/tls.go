@@ -5,13 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"strconv"
 	"time"
-
-	clog "github.com/coredns/coredns/plugin/pkg/log"
 
 	"github.com/caddyserver/caddy"
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
+	clog "github.com/coredns/coredns/plugin/pkg/log"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 // NextProtoDQ - During connection establishment, DNS/QUIC support is indicated
@@ -133,6 +134,11 @@ func parseTLS(c *caddy.Controller) error {
 		config.TLSConfigQUIC = tlsDoQ
 		config.TLSConfigHTTPS = tlsDoH
 
+		// Add callbacks that would count TLS metrics
+		config.TLSConfig.VerifyConnection = makeHandshakeMetrics("tls")
+		config.TLSConfigQUIC.VerifyConnection = makeHandshakeMetrics("quic")
+		config.TLSConfigHTTPS.VerifyConnection = makeHandshakeMetrics("https")
+
 		// Schedule reloading of the TLS session tickets
 		if sessionTicketKeysFiles != nil {
 			go reloadSessionTickets(tls, sessionTicketKeysFiles)
@@ -141,6 +147,26 @@ func parseTLS(c *caddy.Controller) error {
 		}
 	}
 	return nil
+}
+
+func makeHandshakeMetrics(proto string) func(state ctls.ConnectionState) error {
+	return func(state ctls.ConnectionState) error {
+		didResume := "0"
+		if state.DidResume {
+			didResume = "1"
+		}
+
+		tlsHandshakeTotal.With(prometheus.Labels{
+			"proto":            proto,
+			"server_name":      state.ServerName,
+			"tls_version":      strconv.Itoa(int(state.Version)),
+			"did_resume":       didResume,
+			"cipher_suite":     strconv.Itoa(int(state.CipherSuite)),
+			"negotiated_proto": state.NegotiatedProtocol,
+		}).Inc()
+
+		return nil
+	}
 }
 
 func reloadSessionTickets(tls *ctls.Config, sessionTicketKeysFiles []string) {

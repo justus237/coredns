@@ -19,4 +19,10 @@ var (
 		Name:      "session_tickets_rotate_time",
 		Help:      "Time when the TLS session tickets were rotated.",
 	})
+	tlsHandshakeTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: plugin.Namespace,
+		Subsystem: "tls",
+		Name:      "handshake_total",
+		Help:      "Total count of TLS handshakes",
+	}, []string{"proto", "server_name", "tls_version", "did_resume", "cipher_suite", "negotiated_proto"})
 )
