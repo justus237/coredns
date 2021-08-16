@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"strconv"
 	"time"
 
 	"github.com/caddyserver/caddy"
@@ -156,12 +155,24 @@ func makeHandshakeMetrics(proto string) func(state ctls.ConnectionState) error {
 			didResume = "1"
 		}
 
+		tlsVersion := "unknown"
+		switch state.Version {
+		case ctls.VersionTLS13:
+			tlsVersion = "tls1.3"
+		case ctls.VersionTLS12:
+			tlsVersion = "tls1.2"
+		case ctls.VersionTLS11:
+			tlsVersion = "tls1.1"
+		case ctls.VersionTLS10:
+			tlsVersion = "tls1.0"
+		}
+
 		tlsHandshakeTotal.With(prometheus.Labels{
 			"proto":            proto,
 			"server_name":      state.ServerName,
-			"tls_version":      strconv.Itoa(int(state.Version)),
+			"tls_version":      tlsVersion,
 			"did_resume":       didResume,
-			"cipher_suite":     strconv.Itoa(int(state.CipherSuite)),
+			"cipher_suite":     ctls.CipherSuiteName(state.CipherSuite),
 			"negotiated_proto": state.NegotiatedProtocol,
 		}).Inc()
 
