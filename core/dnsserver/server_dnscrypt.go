@@ -13,6 +13,11 @@ import (
 	"github.com/miekg/dns"
 )
 
+// It seems that UDP size 1252 is the default one used by dnscrypt-proxy so
+// it's reasonable to have it as the default read buffer size:
+// https://github.com/AdguardTeam/AdGuardDNS/issues/188
+const defaultUDPSize = 1252
+
 // ServerDNSCrypt implement a server for processing requests using DNSCrypt protocol.
 type ServerDNSCrypt struct {
 	*Server
@@ -79,6 +84,7 @@ func NewServerDNSCrypt(addr string, group []*Config) (*ServerDNSCrypt, error) {
 			Handler: &dnsCryptHandler{
 				server: s,
 			},
+			UDPSize: defaultUDPSize,
 		},
 	}, nil
 }
