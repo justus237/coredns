@@ -3,7 +3,7 @@ coredns
 coredns.exe
 build/
 release/
-vendor/
+#vendor/
 .idea
 
 # for debugging locally
