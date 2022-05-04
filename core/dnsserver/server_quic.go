@@ -10,11 +10,14 @@ import (
 	"time"
 
 	"github.com/caddyserver/caddy"
+	"github.com/coredns/coredns/plugin/pkg/log"
 	"github.com/coredns/coredns/plugin/pkg/reuseport"
 	"github.com/coredns/coredns/plugin/pkg/transport"
 	"github.com/lucas-clemente/quic-go"
 	"github.com/miekg/dns"
 )
+
+var log_ = log.NewWithPlugin("DoQ")
 
 // maxQuicIdleTimeout - maximum QUIC idle timeout.
 // Default value in quic-go is 30, but our internal tests show that
@@ -54,6 +57,7 @@ func NewServerQUIC(addr string, group []*Config) (*ServerQUIC, error) {
 		},
 	}
 
+	log_.Info("NewServerQUIC()")
 	return &ServerQUIC{Server: s, tlsConfig: tlsConfig, bytesPool: &bytesPool}, nil
 }
 
@@ -68,12 +72,16 @@ func (s *ServerQUIC) Serve(_ net.Listener) error {
 // ServePacket implements caddy.UDPServer interface.
 func (s *ServerQUIC) ServePacket(p net.PacketConn) error {
 	s.m.Lock()
+	log_.Info("ServePacket()")
 
 	if s.tlsConfig == nil {
 		return errors.New("cannot run a QUIC server without TLS config")
 	}
+	tokenAcceptor := func(clientAddr net.Addr, token *quic.Token) bool {
+		return true
+	}
 
-	l, err := quic.Listen(p, s.tlsConfig, &quic.Config{MaxIdleTimeout: maxQuicIdleTimeout})
+	l, err := quic.Listen(p, s.tlsConfig, &quic.Config{MaxIdleTimeout: maxQuicIdleTimeout, AcceptToken: tokenAcceptor})
 	if err != nil {
 		return err
 	}

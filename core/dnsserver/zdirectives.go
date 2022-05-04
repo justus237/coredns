@@ -41,6 +41,7 @@ var Directives = []string{
 	"transfer",
 	"hosts",
 	"httpproxy",
+	"h3server",
 	"route53",
 	"azure",
 	"clouddns",

@@ -31,6 +31,8 @@ var nextProtosDoH = []string{
 
 const reloadPeriod = time.Minute
 
+var log = clog.NewWithPlugin("tls")
+
 func init() { plugin.Register("tls", setup) }
 
 func setup(c *caddy.Controller) error {
@@ -203,9 +205,10 @@ func loadSessionTickets(tls *ctls.Config, sessionTicketKeysFiles []string) error
 			clog.Errorf("failed to read session ticket from %s", file)
 			return err
 		}
-
+		log.Infof("session ticket key file: %s\n", file)
 		key := [32]byte{}
 		copy(key[:], b[len(b)-32:])
+		log.Infof("session ticket key: %x\n", key)
 		keys = append(keys, key)
 	}
 

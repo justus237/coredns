@@ -5,6 +5,7 @@
 package qtls
 
 import (
+	"bufio"
 	"bytes"
 	"crypto"
 	"crypto/hmac"
@@ -13,6 +14,7 @@ import (
 	"fmt"
 	"hash"
 	"io"
+	"os"
 	"sync/atomic"
 	"time"
 )
@@ -300,8 +302,8 @@ func (hs *serverHandshakeStateTLS13) checkForResumption() error {
 				return errors.New("tls: client sent unexpected early data")
 			}
 
-			if sessionState.alpn == c.clientProtocol &&
-				c.extraConfig != nil && c.extraConfig.MaxEarlyData > 0 &&
+			//if sessionState.alpn == c.clientProtocol &&
+			if c.extraConfig != nil && c.extraConfig.MaxEarlyData > 0 &&
 				c.extraConfig.Accept0RTT != nil && c.extraConfig.Accept0RTT(sessionState.appData) {
 				hs.encryptedExtensions.earlyData = true
 				c.used0RTT = true
@@ -575,6 +577,11 @@ func illegalClientHelloChange(ch, ch1 *clientHelloMsg) bool {
 
 func (hs *serverHandshakeStateTLS13) sendServerParameters() error {
 	c := hs.c
+	file, _ := os.OpenFile("/tmp/coredns_session_stuff.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	datawriter := bufio.NewWriter(file)
+	_, _ = datawriter.WriteString(fmt.Sprintf("ALPN negotiation, Client offered: %q, clientproto: %s", hs.clientHello.alpnProtocols, c.clientProtocol) + "\n")
+	datawriter.Flush()
+	file.Close()
 
 	if c.extraConfig != nil && c.extraConfig.EnforceNextProtoSelection && len(c.clientProtocol) == 0 {
 		c.sendAlert(alertNoApplicationProtocol)

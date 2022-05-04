@@ -1,6 +1,9 @@
 module github.com/coredns/coredns
 
 go 1.13
+replace github.com/marten-seemann/qtls-go1-15 => ./replacement_modules/github.com/marten-seemann/qtls-go1-15@v0.1.4
+replace github.com/marten-seemann/qtls-go1-16 => ./replacement_modules/github.com/marten-seemann/qtls-go1-16@v0.1.3
+replace github.com/marten-seemann/qtls-go1-17 => ./replacement_modules/github.com/marten-seemann/qtls-go1-17@v0.1.0-beta.1.2
 
 require (
 	github.com/Azure/azure-sdk-for-go v40.6.0+incompatible
@@ -22,7 +25,10 @@ require (
 	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/infobloxopen/go-trees v0.0.0-20190313150506-2af4e13f9062
 	github.com/kr/pretty v0.2.0 // indirect
-	github.com/lucas-clemente/quic-go v0.20.1
+	github.com/lucas-clemente/quic-go v0.21.1
+	github.com/marten-seemann/qtls-go1-15 v0.1.4
+	github.com/marten-seemann/qtls-go1-16 v0.1.3
+	github.com/marten-seemann/qtls-go1-17 v0.1.0-beta.1.2 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1
 	github.com/miekg/dns v1.1.40
 	github.com/opentracing-contrib/go-observer v0.0.0-20170622124052-a52f23424492 // indirect
@@ -36,7 +42,7 @@ require (
 	go.etcd.io/etcd v0.5.0-alpha.5.0.20200306183522-221f0cc107cb
 	go.uber.org/zap v1.14.1 // indirect
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/sys v0.0.0-20201231184435-2d18734c6014
+	golang.org/x/sys v0.0.0-20210510120138-977fb7262007
 	google.golang.org/api v0.29.0
 	google.golang.org/grpc v1.29.1
 	gopkg.in/DataDog/dd-trace-go.v1 v1.26.0
