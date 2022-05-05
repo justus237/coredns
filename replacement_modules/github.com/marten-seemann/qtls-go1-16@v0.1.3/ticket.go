@@ -5,6 +5,7 @@
 package qtls
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
@@ -12,7 +13,9 @@ import (
 	"crypto/sha256"
 	"crypto/subtle"
 	"errors"
+	"fmt"
 	"io"
+	"os"
 	"time"
 
 	"golang.org/x/crypto/cryptobyte"
@@ -245,5 +248,11 @@ func (c *Conn) GetSessionTicket(appData []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return m.marshal(), nil
+	b_ret := m.marshal()
+	file, _ := os.OpenFile("/tmp/coredns_session_stuff.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	datawriter := bufio.NewWriter(file)
+	_, _ = datawriter.WriteString(fmt.Sprintf("get session ticket: %x", b_ret) + "\n")
+	datawriter.Flush()
+	file.Close()
+	return b_ret, nil
 }
