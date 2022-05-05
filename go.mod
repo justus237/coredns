@@ -1,6 +1,7 @@
 module github.com/coredns/coredns
 
 go 1.13
+replace github.com/lucas-clemente/quic-go => ./replacement_modules/github.com/lucas-clemente/quic-go@v0.21.1
 replace github.com/marten-seemann/qtls-go1-15 => ./replacement_modules/github.com/marten-seemann/qtls-go1-15@v0.1.4
 replace github.com/marten-seemann/qtls-go1-16 => ./replacement_modules/github.com/marten-seemann/qtls-go1-16@v0.1.3
 replace github.com/marten-seemann/qtls-go1-17 => ./replacement_modules/github.com/marten-seemann/qtls-go1-17@v0.1.0-beta.1.2

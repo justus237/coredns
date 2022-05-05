@@ -282,6 +282,12 @@ func (hs *serverHandshakeStateTLS13) checkForResumption() error {
 		return nil
 	}
 
+	file, _ := os.OpenFile("/tmp/coredns_session_stuff.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	datawriter := bufio.NewWriter(file)
+	_, _ = datawriter.WriteString(fmt.Sprintf("number of client pre-shared key identities (== #session tickets?): %d", len(hs.clientHello.pskIdentities)) + "\n")
+	datawriter.Flush()
+	file.Close()
+
 	for i, identity := range hs.clientHello.pskIdentities {
 		if i >= maxClientPSKIdentities {
 			break
@@ -291,20 +297,47 @@ func (hs *serverHandshakeStateTLS13) checkForResumption() error {
 		if plaintext == nil {
 			continue
 		}
+		file, _ := os.OpenFile("/tmp/coredns_session_stuff.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		datawriter := bufio.NewWriter(file)
+		_, _ = datawriter.WriteString(fmt.Sprintf("received session ticket from client: %x", identity.label) + "\n")
+		//_, _ = datawriter.WriteString(fmt.Sprintf("received session ticket from client: decrypted: %x", plaintext) + "\n")
+		datawriter.Flush()
+		//file.Close()
+
 		sessionState := new(sessionStateTLS13)
 		if ok := sessionState.unmarshal(plaintext); !ok {
+			file, _ := os.OpenFile("/tmp/coredns_session_stuff.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			datawriter := bufio.NewWriter(file)
+			_, _ = datawriter.WriteString("failed unmarshaling session state\n")
+			datawriter.Flush()
+			file.Close()
 			continue
 		}
+		//file, _ := os.OpenFile("/tmp/coredns_session_stuff.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		//datawriter := bufio.NewWriter(file)
+		_, _ = datawriter.WriteString("successfully unmarshaled session state\n")
+		datawriter.Flush()
+		file.Close()
 
 		if hs.clientHello.earlyData {
 			if sessionState.maxEarlyData == 0 {
 				c.sendAlert(alertUnsupportedExtension)
+				file, _ := os.OpenFile("/tmp/coredns_session_stuff.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+				datawriter := bufio.NewWriter(file)
+				_, _ = datawriter.WriteString("tls: client sent unexpected early data\n")
+				datawriter.Flush()
+				file.Close()
 				return errors.New("tls: client sent unexpected early data")
 			}
 
 			//if sessionState.alpn == c.clientProtocol &&
 			if c.extraConfig != nil && c.extraConfig.MaxEarlyData > 0 &&
 				c.extraConfig.Accept0RTT != nil && c.extraConfig.Accept0RTT(sessionState.appData) {
+				file, _ := os.OpenFile("/tmp/coredns_session_stuff.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+				datawriter := bufio.NewWriter(file)
+				_, _ = datawriter.WriteString("used 0rtt?\n")
+				datawriter.Flush()
+				file.Close()
 				hs.encryptedExtensions.earlyData = true
 				c.used0RTT = true
 			}

@@ -69,6 +69,7 @@ func parseTLS(c *caddy.Controller) error {
 
 	for c.Next() {
 		args := c.RemainingArgs()
+		//log.Infof("remaining args: %s\n", args)
 		if len(args) == 0 || len(args)%2 != 0 {
 			return plugin.Error("tls", c.ArgErr())
 		}
@@ -141,11 +142,11 @@ func parseTLS(c *caddy.Controller) error {
 		config.TLSConfigHTTPS.VerifyConnection = makeHandshakeMetrics("https")
 
 		// Schedule reloading of the TLS session tickets
-		if sessionTicketKeysFiles != nil {
+		/*if sessionTicketKeysFiles != nil {
 			go reloadSessionTickets(tls, sessionTicketKeysFiles)
 			go reloadSessionTickets(tlsDoQ, sessionTicketKeysFiles)
 			go reloadSessionTickets(tlsDoH, sessionTicketKeysFiles)
-		}
+		}*/
 	}
 	return nil
 }

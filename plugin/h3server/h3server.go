@@ -1,16 +1,24 @@
 package httpproxy
 
 import (
+	"net"
 	"net/http"
+	"time"
 
 	"github.com/caddyserver/caddy"
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
 	clog "github.com/coredns/coredns/plugin/pkg/log"
+	"github.com/lucas-clemente/quic-go"
 	"github.com/lucas-clemente/quic-go/http3"
 )
 
 const pluginName = "h3server"
+
+// maxQuicIdleTimeout - maximum QUIC idle timeout.
+// Default value in quic-go is 30, but our internal tests show that
+// a higher value works better for clients written with ngtcp2
+const maxQuicIdleTimeout = 5 * time.Minute
 
 var log = clog.NewWithPlugin(pluginName)
 
@@ -37,19 +45,35 @@ func parseHTTPProxy(c *caddy.Controller) error {
 		return plugin.Error(pluginName, c.Err("H3 server requires DoQ server to be configured (correctly) (i.e. need TLS config)"))
 	}
 	tlsConfig := config.TLSConfigQUIC.Clone()
-	tlsConfig.NextProtos = nextProtosH3
+	tlsConfig.NextProtos = nil
+	/*certs := tlsConfig.Certificates
+	log.Infof("certs: %d\n", len(certs))
+	cert := certs[0]
+	log.Infof("cert: %x\n", cert.PrivateKey)*/
+
 	wwwDir := "/Users/justus/web-performance"
 	handlerMux := http.NewServeMux()
 	handlerMux.Handle("/", http.FileServer(http.Dir(wwwDir)))
 	//http.Handle("/", http.FileServer(http.Dir(wwwDir)))
-	/*tokenAcceptor := func(clientAddr net.Addr, token *quic.Token) bool {
+	var customAcceptToken = func(clientAddr net.Addr, token *quic.Token) bool {
+		log.Infof("token acceptor called for: %s\n", clientAddr.String())
+		if token == nil {
+			log.Infof("no token, rejecting and asking for retry\n")
+			return false
+		}
+		log.Infof("token with remote addr: %s\n", token.RemoteAddr)
 		return true
-	}*/
-	server := http3.Server{
-		Server: &http.Server{Handler: handlerMux, Addr: "localhost:4433"},
-		//QuicConfig: &quic.Config{AcceptToken: tokenAcceptor},
 	}
-	server.TLSConfig = tlsConfig
+	quicConf := &quic.Config{
+		MaxIdleTimeout:    maxQuicIdleTimeout,
+		AcceptToken:       customAcceptToken,
+		StatelessResetKey: nil,
+	}
+	server := http3.Server{
+		Server:     &http.Server{Handler: handlerMux, Addr: "localhost:4433", TLSConfig: tlsConfig},
+		QuicConfig: quicConf,
+	}
+	//server.TLSConfig = tlsConfig
 	go func() {
 		err := server.ListenAndServe()
 		plugin.Error(pluginName, err)
