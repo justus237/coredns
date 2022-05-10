@@ -1,7 +1,6 @@
 package httpproxy
 
 import (
-	"net"
 	"net/http"
 	"time"
 
@@ -50,12 +49,21 @@ func parseHTTPProxy(c *caddy.Controller) error {
 	log.Infof("certs: %d\n", len(certs))
 	cert := certs[0]
 	log.Infof("cert: %x\n", cert.PrivateKey)*/
+	var wwwDir string
+	//get directory to serve
+	for c.Next() {
+		args := c.RemainingArgs()
+		//only serve a single directory
+		if len(args) != 1 {
+			return plugin.Error(pluginName, c.ArgErr())
+		}
+		wwwDir = args[0]
+	}
 
-	wwwDir := "/Users/justus/web-performance"
 	handlerMux := http.NewServeMux()
 	handlerMux.Handle("/", http.FileServer(http.Dir(wwwDir)))
 	//http.Handle("/", http.FileServer(http.Dir(wwwDir)))
-	var customAcceptToken = func(clientAddr net.Addr, token *quic.Token) bool {
+	/*var customAcceptToken = func(clientAddr net.Addr, token *quic.Token) bool {
 		log.Infof("token acceptor called for: %s\n", clientAddr.String())
 		if token == nil {
 			log.Infof("no token, rejecting and asking for retry\n")
@@ -63,11 +71,11 @@ func parseHTTPProxy(c *caddy.Controller) error {
 		}
 		log.Infof("token with remote addr: %s\n", token.RemoteAddr)
 		return true
-	}
+	}*/
 	quicConf := &quic.Config{
-		MaxIdleTimeout:    maxQuicIdleTimeout,
-		AcceptToken:       customAcceptToken,
-		StatelessResetKey: nil,
+		MaxIdleTimeout: maxQuicIdleTimeout,
+		//AcceptToken:       customAcceptToken,
+		//StatelessResetKey: nil,
 	}
 	server := http3.Server{
 		Server:     &http.Server{Handler: handlerMux, Addr: "localhost:4433", TLSConfig: tlsConfig},
