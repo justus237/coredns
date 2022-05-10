@@ -50,14 +50,16 @@ func parseHTTPProxy(c *caddy.Controller) error {
 	cert := certs[0]
 	log.Infof("cert: %x\n", cert.PrivateKey)*/
 	var wwwDir string
+	var port string
 	//get directory to serve
 	for c.Next() {
 		args := c.RemainingArgs()
 		//only serve a single directory
-		if len(args) != 1 {
+		if len(args) != 2 {
 			return plugin.Error(pluginName, c.ArgErr())
 		}
 		wwwDir = args[0]
+		port = args[1]
 	}
 
 	handlerMux := http.NewServeMux()
@@ -78,7 +80,7 @@ func parseHTTPProxy(c *caddy.Controller) error {
 		//StatelessResetKey: nil,
 	}
 	server := http3.Server{
-		Server:     &http.Server{Handler: handlerMux, Addr: "localhost:4433", TLSConfig: tlsConfig},
+		Server:     &http.Server{Handler: handlerMux, Addr: "localhost:" + port, TLSConfig: tlsConfig},
 		QuicConfig: quicConf,
 	}
 	//server.TLSConfig = tlsConfig
