@@ -9,4 +9,5 @@ openssl req -x509 -out localhost.crt -keyout localhost.key \
 #source: https://github.com/GoogleChrome/samples/blob/gh-pages/quictransport/quic_transport_server.py#L44
 # (perma link in case they move the file https://github.com/GoogleChrome/samples/blob/e16a665b10f055824a6c4b39b447fc255b03dec6/quictransport/quic_transport_server.py#L61)
 echo "fingerprint:"
-echo $(openssl x509 -pubkey -noout -in localhost.crt | openssl rsa -pubin -outform der | openssl dgst -sha256 -binary | base64)
+cert_fingerprint=$(openssl x509 -pubkey -noout -in localhost.crt | openssl rsa -pubin -outform der | openssl dgst -sha256 -binary | base64)
+echo $cert_fingerprint > cert_fingerprint.txt
