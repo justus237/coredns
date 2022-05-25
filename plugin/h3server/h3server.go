@@ -1,6 +1,7 @@
 package httpproxy
 
 import (
+	"net"
 	"net/http"
 	"time"
 
@@ -66,17 +67,17 @@ func parseHTTPProxy(c *caddy.Controller) error {
 	handlerMux.Handle("/", http.FileServer(http.Dir(wwwDir)))
 	//http.Handle("/", http.FileServer(http.Dir(wwwDir)))
 	var customAcceptToken = func(clientAddr net.Addr, token *quic.Token) bool {
-		log.Infof("token acceptor called for: %s\n", clientAddr.String())
+		/*log.Infof("token acceptor called for: %s\n", clientAddr.String())
 		if token == nil {
 			log.Infof("no token, rejecting and asking for retry\n")
 			return false
 		}
-		log.Infof("token with remote addr: %s\n", token.RemoteAddr)
+		log.Infof("token with remote addr: %s\n", token.RemoteAddr)*/
 		return true
 	}
 	quicConf := &quic.Config{
 		MaxIdleTimeout: maxQuicIdleTimeout,
-		AcceptToken:       customAcceptToken,
+		AcceptToken:    customAcceptToken,
 		//StatelessResetKey: nil,
 	}
 	server := http3.Server{

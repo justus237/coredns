@@ -78,12 +78,12 @@ func (s *ServerQUIC) ServePacket(p net.PacketConn) error {
 		return errors.New("cannot run a QUIC server without TLS config")
 	}
 	var customAcceptToken = func(clientAddr net.Addr, token *quic.Token) bool {
-		log_.Infof("token acceptor called for: %s\n", clientAddr.String())
+		/*log_.Infof("token acceptor called for: %s\n", clientAddr.String())
 		if token == nil {
 			log_.Infof("no token, rejecting and asking for retry\n")
 			return false
 		}
-		log_.Infof("token with remote addr: %s\n", token.RemoteAddr)
+		log_.Infof("token with remote addr: %s\n", token.RemoteAddr)*/
 		return true
 	}
 	l, err := quic.Listen(p, s.tlsConfig, &quic.Config{MaxIdleTimeout: maxQuicIdleTimeout, AcceptToken: customAcceptToken})
