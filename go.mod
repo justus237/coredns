@@ -1,6 +1,7 @@
 module github.com/coredns/coredns
 
 go 1.13
+
 //replace github.com/lucas-clemente/quic-go => ./replacement_modules/github.com/lucas-clemente/quic-go@v0.21.1
 //replace github.com/marten-seemann/qtls-go1-15 => ./replacement_modules/github.com/marten-seemann/qtls-go1-15@v0.1.4
 //replace github.com/marten-seemann/qtls-go1-16 => ./replacement_modules/github.com/marten-seemann/qtls-go1-16@v0.1.3
@@ -11,6 +12,7 @@ require (
 	github.com/Azure/go-autorest/autorest v0.11.3
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.1
 	github.com/DataDog/datadog-go v3.5.0+incompatible // indirect
+	github.com/NYTimes/gziphandler v1.1.1 // indirect
 	github.com/Shopify/sarama v1.21.0 // indirect
 	github.com/ameshkov/dnscrypt/v2 v2.2.1
 	github.com/apache/thrift v0.13.0 // indirect

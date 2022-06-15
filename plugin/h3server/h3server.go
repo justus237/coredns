@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/NYTimes/gziphandler"
 	"github.com/caddyserver/caddy"
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
@@ -18,7 +19,7 @@ const pluginName = "h3server"
 // maxQuicIdleTimeout - maximum QUIC idle timeout.
 // Default value in quic-go is 30, but our internal tests show that
 // a higher value works better for clients written with ngtcp2
-const maxQuicIdleTimeout = 10 * time.Second //5 * time.Minute
+const maxQuicIdleTimeout = 5 * time.Minute
 
 var log = clog.NewWithPlugin(pluginName)
 
@@ -39,15 +40,15 @@ func setup(c *caddy.Controller) error {
 }
 
 //based on https://github.com/zenazn/goji/blob/master/web/middleware/nocache.go
-func cachingDisabledHTTPHandler(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Cache-Control", "no-cache, private, max-age=0")
-		w.Header().Set("Expires", time.Unix(0, 0).Format(time.RFC1123))
-		w.Header().Set("Pragma", "no-cache")
-		w.Header().Set("X-Accel-Expires", "0")
-		h.ServeHTTP(w, r)
-	})
-}
+// func cachingDisabledHTTPHandler(h http.Handler) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		w.Header().Set("Cache-Control", "no-cache, private, max-age=0")
+// 		w.Header().Set("Expires", time.Unix(0, 0).Format(time.RFC1123))
+// 		w.Header().Set("Pragma", "no-cache")
+// 		w.Header().Set("X-Accel-Expires", "0")
+// 		h.ServeHTTP(w, r)
+// 	})
+// }
 
 func parseHTTPProxy(c *caddy.Controller) error {
 	//return plugin.Error(pluginName, c.Err("test"))
@@ -76,7 +77,7 @@ func parseHTTPProxy(c *caddy.Controller) error {
 	//TODO: implement gzip compression,
 	//e.g. https://github.com/NYTimes/gziphandler
 	handlerMux := http.NewServeMux()
-	handlerMux.Handle("/", cachingDisabledHTTPHandler(http.FileServer(http.Dir(wwwDir))))
+	handlerMux.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir(wwwDir))))
 	//http.Handle("/", http.FileServer(http.Dir(wwwDir)))
 	var customAcceptToken = func(clientAddr net.Addr, token *quic.Token) bool {
 		/*log.Infof("token acceptor called for: %s\n", clientAddr.String())
@@ -90,11 +91,11 @@ func parseHTTPProxy(c *caddy.Controller) error {
 	quicConf := &quic.Config{
 		MaxIdleTimeout: maxQuicIdleTimeout,
 		AcceptToken:    customAcceptToken,
-		KeepAlive:      false,
+		//KeepAlive:      false,
 		//StatelessResetKey: nil,
 	}
 	server := http3.Server{
-		Server:     &http.Server{Handler: handlerMux, Addr: hostAndPort, TLSConfig: tlsConfig, IdleTimeout: 10 * time.Second},
+		Server:     &http.Server{Handler: handlerMux, Addr: hostAndPort, TLSConfig: tlsConfig}, //, IdleTimeout: 10 * time.Second},
 		QuicConfig: quicConf,
 	}
 	server.SetKeepAlivesEnabled(false)
