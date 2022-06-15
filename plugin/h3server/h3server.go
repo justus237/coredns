@@ -93,9 +93,10 @@ func parseHTTPProxy(c *caddy.Controller) error {
 		//StatelessResetKey: nil,
 	}
 	server := http3.Server{
-		Server:     &http.Server{Handler: handlerMux, Addr: hostAndPort, TLSConfig: tlsConfig},
+		Server:     &http.Server{Handler: handlerMux, Addr: hostAndPort, TLSConfig: tlsConfig, IdleTimeout: 10 * time.Second},
 		QuicConfig: quicConf,
 	}
+	server.SetKeepAlivesEnabled(false)
 	//server.TLSConfig = tlsConfig
 	go func() {
 		err := server.ListenAndServe()
