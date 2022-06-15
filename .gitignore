@@ -5,6 +5,7 @@ build/
 release/
 #vendor/
 .idea
+.DS_Store
 
 # for debugging locally
 Corefile
