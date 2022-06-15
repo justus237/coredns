@@ -73,7 +73,7 @@ func parseHTTPProxy(c *caddy.Controller) error {
 		wwwDir = args[0]
 		hostAndPort = args[1]
 	}
-	//TODO: implement gzip compression, 
+	//TODO: implement gzip compression,
 	//e.g. https://github.com/NYTimes/gziphandler
 	handlerMux := http.NewServeMux()
 	handlerMux.Handle("/", cachingDisabledHTTPHandler(http.FileServer(http.Dir(wwwDir))))
@@ -96,7 +96,7 @@ func parseHTTPProxy(c *caddy.Controller) error {
 		Server:     &http.Server{Handler: handlerMux, Addr: hostAndPort, TLSConfig: tlsConfig, IdleTimeout: 10 * time.Second},
 		QuicConfig: quicConf,
 	}
-	server.SetKeepAlivesEnabled(false)
+	//server.SetKeepAlivesEnabled(false)
 	//server.TLSConfig = tlsConfig
 	go func() {
 		err := server.ListenAndServe()
