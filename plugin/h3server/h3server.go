@@ -38,17 +38,6 @@ func setup(c *caddy.Controller) error {
 	return nil
 }
 
-//based on https://github.com/zenazn/goji/blob/master/web/middleware/nocache.go
-func cachingDisabledHTTPHandler(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Cache-Control", "no-cache, private, max-age=0")
-		w.Header().Set("Expires", time.Unix(0, 0).Format(time.RFC1123))
-		w.Header().Set("Pragma", "no-cache")
-		w.Header().Set("X-Accel-Expires", "0")
-		h.ServeHTTP(w, r)
-	})
-}
-
 func parseHTTPProxy(c *caddy.Controller) error {
 	//return plugin.Error(pluginName, c.Err("test"))
 	config := dnsserver.GetConfig(c)
@@ -73,10 +62,9 @@ func parseHTTPProxy(c *caddy.Controller) error {
 		wwwDir = args[0]
 		hostAndPort = args[1]
 	}
-	//TODO: implement gzip compression, 
-	//e.g. https://github.com/NYTimes/gziphandler
+
 	handlerMux := http.NewServeMux()
-	handlerMux.Handle("/", cachingDisabledHTTPHandler(http.FileServer(http.Dir(wwwDir))))
+	handlerMux.Handle("/", http.FileServer(http.Dir(wwwDir)))
 	//http.Handle("/", http.FileServer(http.Dir(wwwDir)))
 	var customAcceptToken = func(clientAddr net.Addr, token *quic.Token) bool {
 		/*log.Infof("token acceptor called for: %s\n", clientAddr.String())
