@@ -90,6 +90,7 @@ func parseHTTPProxy(c *caddy.Controller) error {
 	quicConf := &quic.Config{
 		MaxIdleTimeout: maxQuicIdleTimeout,
 		AcceptToken:    customAcceptToken,
+		KeepAlive:      false,
 		//StatelessResetKey: nil,
 	}
 	server := http3.Server{
