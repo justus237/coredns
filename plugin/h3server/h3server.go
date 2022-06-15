@@ -18,7 +18,7 @@ const pluginName = "h3server"
 // maxQuicIdleTimeout - maximum QUIC idle timeout.
 // Default value in quic-go is 30, but our internal tests show that
 // a higher value works better for clients written with ngtcp2
-const maxQuicIdleTimeout = 20 * time.Second //5 * time.Minute
+const maxQuicIdleTimeout = 10 * time.Second //5 * time.Minute
 
 var log = clog.NewWithPlugin(pluginName)
 
@@ -94,10 +94,10 @@ func parseHTTPProxy(c *caddy.Controller) error {
 		//StatelessResetKey: nil,
 	}
 	server := http3.Server{
-		Server:     &http.Server{Handler: handlerMux, Addr: hostAndPort, TLSConfig: tlsConfig, IdleTimeout: 15 * time.Second},
+		Server:     &http.Server{Handler: handlerMux, Addr: hostAndPort, TLSConfig: tlsConfig, IdleTimeout: 10 * time.Second},
 		QuicConfig: quicConf,
 	}
-	//server.SetKeepAlivesEnabled(false)
+	server.SetKeepAlivesEnabled(false)
 	//server.TLSConfig = tlsConfig
 	go func() {
 		err := server.ListenAndServe()
