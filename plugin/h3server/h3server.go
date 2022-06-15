@@ -18,7 +18,7 @@ const pluginName = "h3server"
 // maxQuicIdleTimeout - maximum QUIC idle timeout.
 // Default value in quic-go is 30, but our internal tests show that
 // a higher value works better for clients written with ngtcp2
-const maxQuicIdleTimeout = 5 * time.Minute
+const maxQuicIdleTimeout = 10 * time.Second //5 * time.Minute
 
 var log = clog.NewWithPlugin(pluginName)
 
