@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/NYTimes/gziphandler"
 	"github.com/caddyserver/caddy"
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
@@ -76,8 +77,7 @@ func parseHTTPProxy(c *caddy.Controller) error {
 	//TODO: implement gzip compression,
 	//e.g. https://github.com/NYTimes/gziphandler
 	handlerMux := http.NewServeMux()
-	//handlerMux.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir(wwwDir))))
-	handlerMux.Handle("/", http.FileServer(http.Dir(wwwDir)))
+	handlerMux.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir(wwwDir))))
 	//http.Handle("/", http.FileServer(http.Dir(wwwDir)))
 	var customAcceptToken = func(clientAddr net.Addr, token *quic.Token) bool {
 		/*log.Infof("token acceptor called for: %s\n", clientAddr.String())
