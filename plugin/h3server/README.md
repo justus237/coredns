@@ -1,17 +1,14 @@
-# httpproxy
+# h3server
 
 ## Name
 
-*httpproxy* is a very simple plugin that determines what to do with DOH HTTP requests that go to a location different from `/dns-query`.
+*h3server* is a very simple plugin that starts an HTTP/3 web server that serves responses from a directory and gzips them using the same session keys and certificate as the DoQ server
 
-## Description
-
-The problem with DOH is that you usually would like to serve something useful from root and not just return 404. The `httpproxy` plugin is supposed to solve that problem. You just specify `host:port` where to proxy all requests that aren't served by the DOH server. 
 
 ## Syntax
 
 ~~~ txt
-httpproxy HOST:PORT
+h3server DIRECTORY HOST:PORT
 ~~~
 
 ## Examples
@@ -19,6 +16,14 @@ httpproxy HOST:PORT
 Here's a very simple example:
 
 ~~~ txt
-httpproxy 127.0.0.1:8080
+quic://.:784 {
+	tls certs/example.crt certs/example.key {
+		session_ticket_key test_session_ticket.key
+	}
+  
+  ...
+  
+	h3server ./www/ localhost:4433
+}
 ~~~
 
