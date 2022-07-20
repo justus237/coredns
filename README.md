@@ -1,8 +1,9 @@
-# CoreDNS fork for AdGuard DNS
+# CoreDNS fork for AdGuard DNS with added h3server
 
 Changes we implemented, that have not been yet sent to the upstream:
 
 * DNS-over-QUIC server-side support
+* h3server plugin to start a web server using the same configuration as the DoQ server
 * DNSCrypt server-side support
 * Always compress DNS responses
 * Added session tickets keys + rotation support
